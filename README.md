@@ -33,3 +33,23 @@ A conversational AI system designed to assist users with medical symptom triage,
 - **Wikipedia REST API**
 
 ---
+## 🚀 Getting Started
+
+### 1. Clone this repository
+```bash
+git clone https://github.com/your-username/medical-ai-chatbot.git
+cd medical-ai-chatbot
+```
+
+### 2. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Run the Flask App
+```bash
+python Agent.py
+```
+Then open `http://127.0.0.1:5000` in your browser.
+
+---
