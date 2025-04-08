@@ -1,0 +1,9 @@
+flask
+transformers>=4.36.0
+peft>=0.6.0
+torch>=2.0.0
+requests
+huggingface-hub
+gunicorn  # optional, for deployment
+accelerate
+bitsandbytes  # optional, only for CUDA users
