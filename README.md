@@ -53,3 +53,10 @@ python Agent.py
 Then open `http://127.0.0.1:5000` in your browser.
 
 ---
+## 🤝 Acknowledgments
+- [Mistral-7B](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1)
+- [PEFT (LoRA)](https://github.com/huggingface/peft)
+- [Hugging Face Transformers](https://huggingface.co/transformers)
+- [Wikipedia REST API](https://en.wikipedia.org/api/rest_v1/)
+  
+  ---
