@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Medical AI Agent</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      padding-top: 2rem;
+      background-color: #f8f9fa;
+    }
+    .container {
+      max-width: 800px;
+    }
+    .output {
+      margin-top: 1rem;
+      white-space: pre-wrap;
+      background: #e9ecef;
+      padding: 1rem;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="mb-4">Medical AI Agent</h1>
+    <ul class="nav nav-tabs" id="aiTab" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="triage-tab" data-toggle="tab" href="#triage" role="tab">Symptom Chatbot</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="health-tab" data-toggle="tab" href="#health" role="tab">Health Information</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="appointment-tab" data-toggle="tab" href="#appointment" role="tab">Appointment Scheduling</a>
+      </li>
+    </ul>
+    <div class="tab-content" id="aiTabContent">
+      <!-- Symptom Chatbot Tab -->
+      <div class="tab-pane fade show active" id="triage" role="tabpanel">
+        <h3 class="mt-3">Symptom Chatbot</h3>
+        <div id="chatWindow" class="output" style="height: 300px; overflow-y: auto;"></div>
+        <form id="chatForm" class="mt-2 d-flex">
+          <input type="text" class="form-control mr-2" id="chatInput" placeholder="Type your symptoms or question here..." autocomplete="off">
+          <button type="submit" class="btn btn-primary">Send</button>
+        </form>
+      </div>
+      <!-- Health Information Tab -->
+      <div class="tab-pane fade" id="health" role="tabpanel">
+        <h3 class="mt-3">Health Information</h3>
+        <form id="healthForm">
+          <div class="form-group">
+            <label for="condition">Enter a medical condition:</label>
+            <input type="text" class="form-control" id="condition" placeholder="e.g. hypertension">
+          </div>
+          <button type="submit" class="btn btn-primary">Get Health Info</button>
+        </form>
+        <div id="healthOutput" class="output"></div>
+      </div>
+      <!-- Appointment Scheduling Tab -->
+      <div class="tab-pane fade" id="appointment" role="tabpanel">
+        <h3 class="mt-3">Appointment Scheduling</h3>
+        <form id="appointmentForm">
+          <div class="form-group">
+            <label for="name">Your Name:</label>
+            <input type="text" class="form-control" id="name" placeholder="John Doe">
+          </div>
+          <div class="form-group">
+            <label for="preferred_date">Preferred Date:</label>
+            <input type="date" class="form-control" id="preferred_date">
+          </div>
+          <div class="form-group">
+            <label for="visit_reason">Reason for Visit:</label>
+            <input type="text" class="form-control" id="visit_reason" placeholder="Regular check-up">
+          </div>
+          <button type="submit" class="btn btn-primary">Schedule Appointment</button>
+        </form>
+        <div id="appointmentOutput" class="output"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap and jQuery JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  
+  <script>
+    // Chatbot message history UI
+    document.getElementById("chatForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const inputBox = document.getElementById("chatInput");
+      const chatWindow = document.getElementById("chatWindow");
+      const message = inputBox.value.trim();
+      if (!message) return;
+
+      // Display user's message
+      const userMsg = document.createElement("div");
+      userMsg.innerHTML = "<strong>You:</strong> " + message;
+      chatWindow.appendChild(userMsg);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      inputBox.value = "";
+
+      // Send to backend
+      fetch('/symptom-chatbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message })
+      })
+      .then(response => response.json())
+      .then(data => {
+        const botResponse = data.response || data.error;
+        const botMsg = document.createElement("div");
+        botMsg.innerHTML = "<strong>Bot:</strong> " + botResponse;
+        chatWindow.appendChild(botMsg);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      })
+      .catch(err => {
+        const errorMsg = document.createElement("div");
+        errorMsg.innerHTML = "<strong>Bot:</strong> Something went wrong. Please try again later.";
+        chatWindow.appendChild(errorMsg);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      });
+    });
+
+    // Handle Health Information Form Submission
+    document.getElementById("healthForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const condition = document.getElementById("condition").value;
+      fetch('/health-info?condition=' + encodeURIComponent(condition))
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("healthOutput").innerText = data.information || data.error;
+      })
+      .catch(err => {
+        document.getElementById("healthOutput").innerText = "Error: " + err;
+      });
+    });
+
+    // Handle Appointment Scheduling Form Submission
+    document.getElementById("appointmentForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const preferred_date = document.getElementById("preferred_date").value;
+      const visit_reason = document.getElementById("visit_reason").value;
+      fetch('/appointment-schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, preferred_date, visit_reason })
+      })
+      .then(response => response.json())
+      .then(data => {
+        let output = data.message;
+        if (data.confirmation_id) {
+          output += "\nConfirmation ID: " + data.confirmation_id;
+        }
+        document.getElementById("appointmentOutput").innerText = output;
+      })
+      .catch(err => {
+        document.getElementById("appointmentOutput").innerText = "Error: " + err;
+      });
+    });
+  </script>
+</body>
+</html>
